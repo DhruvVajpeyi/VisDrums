@@ -10,7 +10,7 @@ pygame.mouse.set_visible(0)
 key_sound = {
     pygame.K_SPACE: pygame.mixer.Sound("samples/bass.wav"),
     pygame.K_RSHIFT: pygame.mixer.Sound("samples/hat.wav"),
-    pygame.K_RCTRL: pygame.mixer.Sound("samples/snare.wav"),
+    pygame.K_LALT: pygame.mixer.Sound("samples/snare.wav"),
 }
 
 def loop():
