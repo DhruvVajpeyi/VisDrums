@@ -8,7 +8,7 @@ cap = cv2.VideoCapture(0)
 tracker_fn = cv2.TrackerCSRT_create
 tracker1 = None
 tracker2 = None
-
+circles = None
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -17,32 +17,36 @@ while True:
     # Our operations on the frame come here
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # gray2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
-    smoothed = cv2.GaussianBlur(gray, (7, 7), 1.5)
+    smoothed_gray = cv2.GaussianBlur(gray, (7, 7), 1.5)
+    smoothed_frame = cv2.GaussianBlur(frame, (7, 7), 1.5)
 
-    circles = get_circles(smoothed)
     # circles2 = get_circles(gray2)
     
     # draw_circles(circles2, gray2)
 
+    if cv2.waitKey(1) & 0xFF == ord("w"):
+        circles = get_circles(smoothed_gray)
+
     if cv2.waitKey(1) & 0xFF == ord("s"):
         # select the bounding box of the object we want to track (make
         # sure you press ENTER or SPACE after selecting the ROI)
-        tracker1 = init_tracker(smoothed, "Tracker 1", tracker_fn)
-        tracker2 = init_tracker(smoothed, "Tracker 2", tracker_fn)
+        tracker1 = init_tracker(smoothed_frame, "Tracker 1", tracker_fn)
+        tracker2 = init_tracker(smoothed_frame, "Tracker 2", tracker_fn)
 
-    box1 = draw_bb(tracker1, smoothed)
-    box2 = draw_bb(tracker2, smoothed)
+    box1 = draw_bb(tracker1, smoothed_frame)
+    box2 = draw_bb(tracker2, smoothed_frame)
+    
+    if circles is not None:
+        draw_circles(circles, smoothed_frame)
+        circle_idx1 = get_overlapped_circles(circles, box1)
+        circle_idx2 = get_overlapped_circles(circles, box2)
 
-    draw_circles(circles, smoothed)
-    circle_idx1 = get_overlapped_circles(circles, box1)
-    circle_idx2 = get_overlapped_circles(circles, box2)
-
-    if (circle_idx1 != -1):
-        print("Stick 1 overlapping: " + str(circle_idx1))
-    if (circle_idx2 != -1):
-        print("Stick 2 overlapping: " + str(circle_idx2))
+        if (circle_idx1 != -1):
+            print("Stick 1 overlapping: " + str(circle_idx1))
+        if (circle_idx2 != -1):
+            print("Stick 2 overlapping: " + str(circle_idx2))
     # Display the resulting frame
-    cv2.imshow('frame', smoothed)
+    cv2.imshow('frame', smoothed_frame)
 
     # cv2.imshow('frame2', gray2)
     if cv2.waitKey(1) & 0xFF == ord('q'):

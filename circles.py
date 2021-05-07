@@ -3,7 +3,7 @@ import cv2
 
 
 def get_circles(gray_frame):
-    return cv2.HoughCircles(gray_frame, cv2.HOUGH_GRADIENT, 1.5, 50, param2=95)
+    return cv2.HoughCircles(gray_frame, cv2.HOUGH_GRADIENT, 1.3, 50, param2=95)
 
 def draw_circles(circles_list, img):
     if circles_list is not None:
