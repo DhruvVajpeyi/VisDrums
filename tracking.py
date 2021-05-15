@@ -15,9 +15,12 @@ def draw_bb(tracker, frame):
     return None
 
 
-def init_tracker(frame, tag, trackerFn):
+def init_tracker(frame, tag):
     init_bb = cv2.selectROI(tag, frame, fromCenter=False, showCrosshair=True)
-    tracker = trackerFn()
+    param_handler = cv2.TrackerCSRT_Params()
+    setattr(param_handler, 'background_ratio', 0)
+    print(param_handler)
+    tracker = cv2.TrackerCSRT_create()
     tracker.init(frame, init_bb)
     return tracker
 
