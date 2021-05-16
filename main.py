@@ -3,12 +3,16 @@ from circles import draw_circles, get_circles
 from tracking import init_tracker, draw_bb, get_overlapped_circles, check_if_below_line, check_if_reset_line
 from multiprocessing import Process, Value
 import pygame
+from time import perf_counter
 
 def top_view(circle_idx1, circle_idx2):
     cap = cv2.VideoCapture(0)
     tracker1_top = None
     tracker2_top = None
     circles = None
+    pre_time = perf_counter()
+    frames = 0
+    fps = "0"
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
@@ -38,9 +42,17 @@ def top_view(circle_idx1, circle_idx2):
             circle_idx2.value = get_overlapped_circles(circles, box2_top)
 
         draw_circles(circles, frame)
+        update_time = perf_counter()
+        if(update_time - pre_time >= 1):
+            fps = "{:.2f}".format(frames/(update_time-pre_time))
+            pre_time = update_time
+            frames = 0
 
+        frame = cv2.putText(frame, 'FPS: ' + fps, (0, frame.shape[0]-20), cv2.FONT_HERSHEY_SIMPLEX, 
+                   1, (255, 0, 0))
         # Display the resulting frame
         cv2.imshow('frame', frame)
+        frames += 1
     cap.release()
     cv2.destroyAllWindows()
 
@@ -55,6 +67,12 @@ def side_view(circle_idx1, circle_idx2):
     below_line_2 = False
     reset_hit_1 = True
     reset_hit_2 = True
+
+    pre_time = perf_counter()
+    frames = 0
+    fps = "0"
+    hits = 0
+    bpm = "0"
 
     pygame.mixer.init()
     sounds = [pygame.mixer.Sound("samples/bass.wav"), pygame.mixer.Sound("samples/snare.wav"), pygame.mixer.Sound("samples/hat.wav")]
@@ -82,16 +100,32 @@ def side_view(circle_idx1, circle_idx2):
         if circle_idx1.value != -1 and below_line_1 and reset_hit_1:
             sounds[circle_idx1.value].play()
             reset_hit_1 = False
+            hits += 1
         if circle_idx2.value != -1 and below_line_2 and reset_hit_2:
             sounds[circle_idx2.value].play()
             reset_hit_2 = False
+            hits += 1
 
         cv2.line(frame, (0, frame.shape[0] - line_threshold),
                     (frame.shape[1], frame.shape[0] - line_threshold), (0, 0, 255),
                     7)
 
+        update_time = perf_counter()
+        if(update_time - pre_time >= 1):
+            fps = "{:.2f}".format(frames/(update_time-pre_time))
+            bpm = "{:.2f}".format(60*hits/(update_time-pre_time))
+            pre_time = update_time
+            frames = 0
+            hits = 0
+
+        frame = cv2.putText(frame, 'FPS: ' + fps, (frame.shape[0]-50, 30), cv2.FONT_HERSHEY_SIMPLEX, 
+                   1, (255, 0, 0))
+        frame = cv2.putText(frame, 'BPM: ' + bpm, (frame.shape[0]-50, 80), cv2.FONT_HERSHEY_SIMPLEX, 
+                   1, (255, 0, 0))
+
         # Display the resulting frame
         cv2.imshow('frame2', frame)
+        frames += 1
 
     # When everything done, release the capture
     cap.release()
