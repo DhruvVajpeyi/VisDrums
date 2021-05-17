@@ -39,35 +39,9 @@ def get_overlapped_circles(circles, bbox):
     if circles is not None and bbox is not None:
         circles_list = np.round(circles[0, :]).astype("int")
         for idx, (circle_x, circle_y, circle_r) in enumerate(circles_list):
-            if check_overlap_alt(circle_x, circle_y, circle_r, bbox):
+            if check_overlap(circle_x, circle_y, circle_r, bbox):
                 return idx
     return -1
-
-"""Check if bounding box overlaps circle
-args: circle_x - x position of circle center
-      circle_y - y position of circle center
-      circle_r - circle radius
-      bbox - bounding box of tracked object
-returns true if bounding box overlaps circle
-"""
-def check_overlap(circle_x, circle_y, circle_r, bbox):
-    if bbox is None:
-        return False
-
-    circle_distance_x = abs(circle_x - (bbox[0] + bbox[2] / 2))
-    circle_distance_y = abs(circle_y - (bbox[1] + bbox[3] / 2))
-
-    if (circle_distance_x > (bbox[2] / 2 + circle_r) or
-            circle_distance_y > (bbox[3] / 2 + circle_r)):
-        return False
-
-    if (circle_distance_x <= bbox[2] / 2 or
-            circle_distance_y <= bbox[3] / 2):
-        return True
-
-    corner_distance_sq = (circle_distance_x - bbox[2] / 2) ** 2 + (circle_distance_y - bbox[3] / 2) ** 2
-
-    return corner_distance_sq <= (circle_r ** 2)
 
 """Check if bounding box center is inside circle
 args: circle_x - x position of circle center
@@ -76,7 +50,7 @@ args: circle_x - x position of circle center
       bbox - bounding box of tracked object
 returns true if bounding box center is inside circle
 """
-def check_overlap_alt(circle_x, circle_y, circle_r, bbox):
+def check_overlap(circle_x, circle_y, circle_r, bbox):
     mid_x = bbox[0] + bbox[2] / 2
     mid_y = bbox[1] + bbox[3] / 2
 
